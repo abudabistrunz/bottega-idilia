@@ -60,7 +60,7 @@
   header .title{ display:flex; flex-direction:column; line-height:1.15; min-width:0; }
   header .title .name{ font-family: Georgia, serif; font-size:17px; letter-spacing:0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   header .title .sub{ font-size:11px; color:#E3C9B8; margin-top:2px; }
-  header .actions{ display:flex; gap:8px; flex:0 0 auto; }
+  header .actions{ display:flex; gap:6px; flex:0 0 auto; }
   .edit-banner{
     background:var(--amber); color:#3A2612; font-size:12.5px; text-align:center;
     padding:8px 14px; line-height:1.4;
@@ -68,7 +68,7 @@
   .icon-btn{
     background:rgba(255,255,255,0.12);
     border:none; color:#F6EFE0; width:38px; height:38px; border-radius:10px;
-    display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:17px; cursor:pointer;
   }
   .icon-btn:active{ background:rgba(255,255,255,0.24); }
   .icon-btn.on{ background:#F6EFE0; color:var(--wine); }
@@ -190,12 +190,15 @@
   }
   .total-bar .lbl{ font-weight:500; font-size:13px; color:var(--muted); }
 
-  .cat-tabs{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px; }
+  .cat-tabs{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px; flex-wrap:wrap; }
   .cat-tab{
     flex:0 0 auto; padding:7px 14px; border-radius:999px; border:1px solid var(--line);
     background:var(--surface); font-size:13px; cursor:pointer; color:var(--ink); white-space:nowrap;
   }
   .cat-tab.active{ background:var(--olive); border-color:var(--olive); color:#fff; }
+  .conto-tab.active{ background:var(--wine); border-color:var(--wine); }
+  .conto-del{ margin-left:6px; opacity:0.75; }
+  .conto-add{ border-style:dashed; color:var(--olive-dark); background:transparent; }
 
   .menu-item-row{
     display:flex; align-items:center; justify-content:space-between;
@@ -205,6 +208,11 @@
   .menu-item-row .mi-name{ font-size:14px; font-weight:500; }
   .menu-item-row .mi-price{ font-size:13px; color:var(--muted); }
   .menu-item-row .mi-tag{ font-size:10px; color:var(--olive-dark); }
+
+  .guide-item{ padding:12px 4px; border-bottom:1px solid var(--line); }
+  .guide-item:last-child{ border-bottom:none; }
+  .guide-name{ font-weight:700; font-size:14px; }
+  .guide-desc{ font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.45; }
 
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:6px;
@@ -281,6 +289,35 @@
   const eur = (n) => (Math.round((n||0)*100)/100).toFixed(2).replace('.', ',') + ' €';
   const escapeHtml = (s) => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  /* ---------- guida (contenuto statico di riferimento) ---------- */
+  const GUIDA_TAGLIERI = [
+    {name:'Salame', desc:"Salame Milano, Napoli o Felino: sapore equilibrato, base sicura per ogni tagliere misto."},
+    {name:'Prosciutto crudo', desc:"San Daniele o Parma: dolce e delicato. Affettarlo fine, servirlo per ultimo perché si asciuga in fretta."},
+    {name:'Prosciutto cotto', desc:"Alternativa più morbida e meno salata del crudo, apprezzata anche dai palati più semplici."},
+    {name:'Spalla cotta', desc:"Più saporita del prosciutto cotto, tipica del centro Italia."},
+    {name:'Coppa', desc:"Suino stagionato, gusto intenso e speziato: va servita a fette sottili."},
+    {name:'Pancetta', desc:"Stesa o arrotolata (coppata): ottima anche leggermente scaldata prima di servire."},
+    {name:'Rigatino', desc:"Pancetta toscana arrotolata e speziata con pepe nero: dà carattere al tagliere."},
+    {name:'Culatello', desc:"Il cuore della coscia del maiale, molto pregiato e delicato: servire in piccole porzioni."},
+    {name:'Guanciale', desc:"Molto saporito e grasso, va affettato sottilissimo."},
+    {name:'Bresaola', desc:"Carne di manzo stagionata, magra: buon contrasto con i salumi più grassi."},
+    {name:'Ventricina', desc:"Salume abruzzese piccante, per chi ama il gusto forte."},
+    {name:'Pecorino (fresco/stagionato)', desc:"Accompagna bene sia i salumi dolci che quelli piccanti; ottimo con il miele."},
+    {name:'Formaggio di fossa o caciotta', desc:"Aggiungono varietà di consistenza e sapore al tagliere."},
+    {name:'Accompagnamenti', desc:"Miele, confettura di fichi o cipolle, noci, grissini o pane carasau completano la presentazione."},
+  ];
+  const GUIDA_COCKTAIL = [
+    {name:'Spritz', desc:"3 parti Prosecco, 2 parti Aperol, 1 parte soda, ghiaccio abbondante, fetta d'arancia."},
+    {name:'Negroni', desc:"1/3 gin, 1/3 vermouth rosso, 1/3 Campari, mescolato con ghiaccio, scorza d'arancia."},
+    {name:'Americano', desc:"1/3 vermouth rosso, 1/3 Campari, 1/3 soda, ghiaccio, scorza d'arancia."},
+    {name:'Gin Tonic', desc:"4 cl gin, tonica fino a riempire, ghiaccio abbondante, fetta di limone o lime."},
+    {name:'Moscow Mule', desc:"4,5 cl vodka, 1,5 cl succo di lime, ginger beer fino a riempire, ghiaccio."},
+    {name:'Margarita', desc:"3,5 cl tequila, 2 cl triple sec, 1,5 cl succo di lime, shakerato con ghiaccio."},
+    {name:'Mojito', desc:"4,5 cl rum bianco, 6-8 foglie di menta, 2 cl succo di lime, 2 cucchiaini di zucchero, soda, ghiaccio tritato."},
+    {name:'Cuba Libre', desc:"5 cl rum, succo di lime, cola fino a riempire, ghiaccio."},
+    {name:'Old Fashioned', desc:"4,5 cl whiskey, una zolletta di zucchero, 2 gocce di angostura, scorza d'arancia, ghiaccio."},
+  ];
+
   /* ---------- default data ---------- */
   function defaultTables(){
     return [
@@ -320,15 +357,19 @@
   let state = {
     tables: [],
     menu: [],
-    orders: {}, // tableId -> [ {id, itemId, name, categoryName, price, qty, weight(g|null), unitLabel} ]
+    // orders[tableId] = [ {id, name, lines:[{id,itemId,name,categoryName,price,qty,weight,note}]} ]  (array di "conti")
+    orders: {},
   };
   let ui = {
     editMode: false,
     openTableId: null,
     activeCat: null,
+    activeContoId: null,
     menuManagerOpen: false,
-    menuManagerCat: null,
-    modal: null, // {type:'add-table'|'edit-table'|'add-item'|'edit-item'|'add-cat', ...}
+    guidaOpen: false,
+    guidaTab: 'taglieri',
+    exitConfirmOpen: false,
+    modal: null,
     lastSavedTick: 0,
   };
 
@@ -389,7 +430,7 @@
     try{
       sb.channel('app_state_changes')
         .on('postgres_changes', { event:'UPDATE', schema:'public', table:'app_state', filter:`id=eq.${ROW_ID}` }, (payload)=>{
-          if(Date.now() - ui.lastSavedTick < 1200) return; // skip echo of our own save
+          if(Date.now() - ui.lastSavedTick < 1200) return;
           if(applyRemoteRow(payload.new)) render();
         })
         .subscribe();
@@ -400,7 +441,6 @@
   function startPolling(){
     if(polling || !hasStorage) return;
     polling = true;
-    // safety-net poll in case realtime misses an update (e.g. brief disconnect)
     setInterval(async ()=>{
       if(Date.now() - ui.lastSavedTick < 1500) return;
       try{
@@ -412,17 +452,47 @@
     }, 6000);
   }
 
-  /* ---------- derived ---------- */
-  function tableOrders(tableId){ return state.orders[tableId] || []; }
+  /* ---------- conti / ordini ---------- */
+  // Lettura pura (nessuna mutazione), usata dalla plancia tavoli. Gestisce sia il vecchio
+  // formato (array di righe) sia il nuovo (array di conti) per compatibilità.
+  function allLines(tableId){
+    const raw = state.orders[tableId];
+    if(!raw || !Array.isArray(raw) || raw.length===0) return [];
+    if(raw[0] && raw[0].lines) return raw.flatMap(c => c.lines || []);
+    return raw; // vecchio formato flat
+  }
   function tableTotal(tableId){
-    return tableOrders(tableId).reduce((sum, l) => sum + lineTotal(l), 0);
+    return allLines(tableId).reduce((sum, l) => sum + lineTotal(l), 0);
   }
   function lineTotal(l){
     if(l.weight!=null) return (l.price * (l.weight/100)) * l.qty;
     return l.price * l.qty;
   }
   function tableStatus(tableId){
-    return tableOrders(tableId).length > 0 ? 'comanda' : 'libero';
+    return allLines(tableId).length > 0 ? 'comanda' : 'libero';
+  }
+  function contoTotal(conto){
+    return (conto.lines||[]).reduce((sum, l) => sum + lineTotal(l), 0);
+  }
+  // Lettura CON migrazione/creazione, usata solo quando si apre/modifica un tavolo.
+  function getConti(tableId){
+    let raw = state.orders[tableId];
+    if(!raw || !Array.isArray(raw) || raw.length===0){
+      raw = [{id: uid(), name:'Conto 1', lines: []}];
+      state.orders[tableId] = raw;
+    } else if(raw[0] && !raw[0].lines){
+      raw = [{id: uid(), name:'Conto 1', lines: raw}];
+      state.orders[tableId] = raw;
+    }
+    return state.orders[tableId];
+  }
+  function findLine(tableId, lineId){
+    const conti = getConti(tableId);
+    for(const c of conti){
+      const l = (c.lines||[]).find(x=>x.id===lineId);
+      if(l) return {conto:c, line:l};
+    }
+    return null;
   }
 
   /* ---------- render ---------- */
@@ -430,17 +500,14 @@
     const app = document.getElementById('app');
     app.innerHTML = `
       ${header()}
-      <main>${ui.editMode ? '' : ''}${floorGrid()}</main>
+      <main>${floorGrid()}</main>
       ${ui.editMode ? `<button class="fab-add" onclick="App.openAddTable()">+</button>` : ''}
       ${ui.openTableId ? tablePanel() : ''}
       ${ui.menuManagerOpen ? menuManagerPanel() : ''}
+      ${ui.guidaOpen ? guidaPanel() : ''}
       ${ui.modal ? modalMarkup() : ''}
+      ${ui.exitConfirmOpen ? exitConfirmMarkup() : ''}
     `;
-    // focus name input if editing table name
-    if(ui.openTableId){
-      const inp = document.getElementById('tname-input');
-      if(inp && document.activeElement !== inp){ /* no auto-focus to avoid keyboard popping constantly */ }
-    }
   }
 
   function header(){
@@ -455,6 +522,7 @@
         </div>
         <div class="actions">
           <button class="icon-btn ${ui.editMode?'on':''}" onclick="App.toggleEdit()" title="Modifica tavoli">✎</button>
+          <button class="icon-btn" onclick="App.openGuida()" title="Guida">📖</button>
           <button class="icon-btn" onclick="App.openMenuManager()" title="Gestisci menu">☰</button>
         </div>
       </header>
@@ -485,10 +553,20 @@
   function tablePanel(){
     const t = state.tables.find(x=>x.id===ui.openTableId);
     if(!t) return '';
-    const lines = tableOrders(t.id);
+    const conti = getConti(t.id);
+    if(!ui.activeContoId || !conti.find(c=>c.id===ui.activeContoId)) ui.activeContoId = conti[0].id;
+    const activeConto = conti.find(c=>c.id===ui.activeContoId);
+    const lines = activeConto.lines || [];
+
     const cats = state.menu;
     if(!ui.activeCat && cats.length) ui.activeCat = cats[0].id;
     const activeCat = cats.find(c=>c.id===ui.activeCat) || cats[0];
+
+    const contiTabsHtml = conti.map(c => `
+      <button class="cat-tab conto-tab ${c.id===activeConto.id?'active':''}" onclick="App.setActiveConto('${c.id}')">
+        ${escapeHtml(c.name)}${conti.length>1 ? ` <span class="conto-del" onclick="event.stopPropagation();App.deleteConto('${c.id}')">×</span>` : ''}
+      </button>
+    `).join('');
 
     const linesHtml = lines.length ? lines.map(l => `
       <div class="order-line">
@@ -509,7 +587,7 @@
         </div>
         <input class="note-input" type="text" placeholder="Nota per la cucina (es. senza cipolla)" value="${escapeHtml(l.note||'')}" onchange="App.setNote('${l.id}', this.value)">
       </div>
-    `).join('') : `<div class="empty-hint" style="margin-top:8px;">Nessun elemento in comanda.<br>Aggiungi dal menu qui sotto.</div>`;
+    `).join('') : `<div class="empty-hint" style="margin-top:8px;">Nessun elemento in questo conto.<br>Aggiungi dal menu qui sotto.</div>`;
 
     const tabsHtml = cats.map(c => `
       <button class="cat-tab ${c.id===activeCat?.id?'active':''}" onclick="App.setActiveCat('${c.id}')">${escapeHtml(c.name)}</button>
@@ -533,12 +611,20 @@
             <button class="icon-btn panel-close" onclick="App.closeTable()">✕</button>
           </div>
           <div class="panel-body">
-            <div class="section-label">Comanda</div>
+            <div class="section-label">Conti</div>
+            <div class="cat-tabs">${contiTabsHtml}<button class="cat-tab conto-add" onclick="App.addConto()">+ conto</button></div>
+
+            <div class="section-label">Comanda — ${escapeHtml(activeConto.name)}</div>
             ${linesHtml}
             <div class="total-bar">
-              <span class="lbl">Totale tavolo</span>
-              <span>${eur(tableTotal(t.id))}</span>
+              <span class="lbl">Totale conto</span>
+              <span>${eur(contoTotal(activeConto))}</span>
             </div>
+            ${conti.length>1 ? `
+            <div class="total-bar" style="background:transparent; box-shadow:none; padding:8px 4px 0;">
+              <span class="lbl">Totale tavolo (tutti i conti)</span>
+              <span style="color:var(--wine); font-size:14px;">${eur(tableTotal(t.id))}</span>
+            </div>` : ''}
 
             <div class="section-label">Aggiungi elemento</div>
             <div class="cat-tabs">${tabsHtml}</div>
@@ -584,6 +670,48 @@
           <div class="panel-body">
             ${blocks || `<div class="empty-hint">Nessuna categoria.</div>`}
             <button class="btn btn-outline btn-block" onclick="App.openAddCategory()">+ Nuova categoria</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function guidaPanel(){
+    const tab = ui.guidaTab;
+    const list = tab==='taglieri' ? GUIDA_TAGLIERI : GUIDA_COCKTAIL;
+    const itemsHtml = list.map(g => `
+      <div class="guide-item">
+        <div class="guide-name">${escapeHtml(g.name)}</div>
+        <div class="guide-desc">${escapeHtml(g.desc)}</div>
+      </div>
+    `).join('');
+    return `
+      <div class="overlay open" onclick="if(event.target===this) App.closeGuida()">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="name-edit brand" style="font-family:Georgia,serif; font-size:19px;">Guida</div>
+            <button class="icon-btn panel-close" onclick="App.closeGuida()">✕</button>
+          </div>
+          <div class="panel-body">
+            <div class="cat-tabs">
+              <button class="cat-tab ${tab==='taglieri'?'active':''}" onclick="App.setGuidaTab('taglieri')">Taglieri</button>
+              <button class="cat-tab ${tab==='cocktail'?'active':''}" onclick="App.setGuidaTab('cocktail')">Cocktail</button>
+            </div>
+            <div class="cat-block-body">${itemsHtml}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function exitConfirmMarkup(){
+    return `
+      <div class="modal-mini">
+        <div class="sheet">
+          <h3>Vuoi veramente chiudere la pagina?</h3>
+          <div class="sheet-actions">
+            <button class="btn btn-outline" onclick="App.cancelExit()">No, resta</button>
+            <button class="btn btn-danger" onclick="App.confirmExit()">Sì, chiudi</button>
           </div>
         </div>
       </div>
@@ -657,7 +785,12 @@
   const App = {
     toggleEdit(){ ui.editMode = !ui.editMode; render(); },
 
-    openTable(id){ ui.openTableId = id; ui.activeCat = null; render(); },
+    openTable(id){
+      ui.openTableId = id; ui.activeCat = null;
+      const conti = getConti(id);
+      ui.activeContoId = conti[0].id;
+      render();
+    },
     closeTable(){ ui.openTableId = null; render(); },
     renameTable(id, val){
       const t = state.tables.find(x=>x.id===id); if(!t) return;
@@ -666,14 +799,33 @@
     },
     setActiveCat(id){ ui.activeCat = id; render(); },
 
+    setActiveConto(id){ ui.activeContoId = id; render(); },
+    addConto(){
+      const conti = getConti(ui.openTableId);
+      if(conti.length >= 6){ alert('Massimo 6 conti per tavolo.'); return; }
+      const nc = {id: uid(), name: 'Conto '+(conti.length+1), lines: []};
+      conti.push(nc);
+      ui.activeContoId = nc.id;
+      persist('orders'); render();
+    },
+    deleteConto(id){
+      const conti = getConti(ui.openTableId);
+      if(conti.length <= 1){ alert('Deve rimanere almeno un conto.'); return; }
+      if(!confirm('Eliminare questo conto e i suoi elementi?')) return;
+      state.orders[ui.openTableId] = conti.filter(c=>c.id!==id);
+      if(ui.activeContoId===id) ui.activeContoId = state.orders[ui.openTableId][0].id;
+      persist('orders'); render();
+    },
+
     addLine(catId, itemId){
       const cat = state.menu.find(c=>c.id===catId); const it = cat.items.find(i=>i.id===itemId);
       const tid = ui.openTableId;
-      if(!state.orders[tid]) state.orders[tid] = [];
-      const existing = !it.weight ? state.orders[tid].find(l=>l.itemId===itemId) : null;
+      const conti = getConti(tid);
+      const conto = conti.find(c=>c.id===ui.activeContoId) || conti[0];
+      const existing = !it.weight ? conto.lines.find(l=>l.itemId===itemId) : null;
       if(existing){ existing.qty += 1; }
       else{
-        state.orders[tid].push({
+        conto.lines.push({
           id: uid(), itemId: it.id, name: it.name, categoryName: cat.name,
           price: it.price, qty: 1, weight: it.weight ? 100 : null, note: ''
         });
@@ -681,31 +833,33 @@
       persist('orders'); render();
     },
     changeQty(lineId, delta){
-      const tid = ui.openTableId; const arr = state.orders[tid] || [];
-      const l = arr.find(x=>x.id===lineId); if(!l) return;
-      l.qty += delta;
-      if(l.qty <= 0){ state.orders[tid] = arr.filter(x=>x.id!==lineId); }
+      const tid = ui.openTableId; const loc = findLine(tid, lineId); if(!loc) return;
+      loc.line.qty += delta;
+      if(loc.line.qty <= 0){ loc.conto.lines = loc.conto.lines.filter(x=>x.id!==lineId); }
       persist('orders'); render();
     },
     setWeight(lineId, val){
-      const tid = ui.openTableId; const l = (state.orders[tid]||[]).find(x=>x.id===lineId); if(!l) return;
-      l.weight = Math.max(0, parseFloat(val)||0);
+      const tid = ui.openTableId; const loc = findLine(tid, lineId); if(!loc) return;
+      loc.line.weight = Math.max(0, parseFloat(val)||0);
       persist('orders'); render();
     },
     setNote(lineId, val){
-      const tid = ui.openTableId; const l = (state.orders[tid]||[]).find(x=>x.id===lineId); if(!l) return;
-      l.note = val;
+      const tid = ui.openTableId; const loc = findLine(tid, lineId); if(!loc) return;
+      loc.line.note = val;
       persist('orders');
-      // no re-render on every keystroke: keeps focus in the input while typing
     },
     removeLine(lineId){
-      const tid = ui.openTableId;
-      state.orders[tid] = (state.orders[tid]||[]).filter(x=>x.id!==lineId);
+      const tid = ui.openTableId; const loc = findLine(tid, lineId); if(!loc) return;
+      loc.conto.lines = loc.conto.lines.filter(x=>x.id!==lineId);
       persist('orders'); render();
     },
 
     openMenuManager(){ ui.menuManagerOpen = true; render(); },
     closeMenuManager(){ ui.menuManagerOpen = false; render(); },
+
+    openGuida(){ ui.guidaOpen = true; render(); },
+    closeGuida(){ ui.guidaOpen = false; render(); },
+    setGuidaTab(tab){ ui.guidaTab = tab; render(); },
 
     openAddTable(){ ui.modal = {type:'add-table', shape:'round'}; render(); },
     openEditTable(id){ const t = state.tables.find(x=>x.id===id); ui.modal = {type:'edit-table', id, shape:t.shape}; render(); },
@@ -771,8 +925,28 @@
     },
 
     closeModal(){ ui.modal = null; render(); },
+
+    cancelExit(){ ui.exitConfirmOpen = false; render(); },
+    confirmExit(){
+      ui.exitConfirmOpen = false;
+      exiting = true;
+      render();
+      history.back();
+    },
   };
   window.App = App;
+
+  /* ---------- doppio "indietro" per uscire ---------- */
+  let exiting = false;
+  try{
+    history.pushState({guard:true}, '', location.href);
+    window.addEventListener('popstate', function(){
+      if(exiting) return;
+      history.pushState({guard:true}, '', location.href);
+      ui.exitConfirmOpen = true;
+      render();
+    });
+  }catch(e){ /* history API non disponibile: nessun blocco, il back funziona normalmente */ }
 
   loadAll();
 })();
